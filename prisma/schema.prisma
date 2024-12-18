@@ -13,6 +13,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  SUPERADMIN
+  USER
+}
+
 model User {
   id        String     @default(uuid()) @id
   lastName  String 
@@ -20,6 +25,10 @@ model User {
   email     String     @unique
   address   String 
   phone     String
+  role      Role       @default(USER)
+  password  String
+
+  isActive Boolean      @default(true)
 
   isDeleted Boolean    @default(false)
 
