@@ -1,14 +1,13 @@
 import { Logger } from '@nestjs/common';
 import { Client } from 'node-mailjet';
 import { Email, EmailService } from '../messanging.types';
-import { ConfigService } from '@nestjs/config';
 import { messagingConfig } from 'src/common/constants';
 
 export class MailjetService implements EmailService {
   private logger = new Logger(MailjetService.name);
   private client: Client;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor() {
     this.client = new Client({
       apiKey: messagingConfig.apiKey,
       apiSecret: messagingConfig.secret,
