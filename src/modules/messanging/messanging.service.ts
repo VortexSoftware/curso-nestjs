@@ -17,4 +17,34 @@ export class MessagingService {
       body,
     });
   }
+
+  async sendResetPasswordEmail(input: { from: string; to: string }) {
+    const { from, to } = input;
+    const subject = 'Restablecer contraseña';
+    const body = `Se restablecio correctamente su contraseña.`;
+
+    await this.emailService.send({
+      from,
+      to,
+      subject,
+      body,
+    });
+  }
+
+  async sendRecoverPasswordEmail(input: {
+    from: string;
+    to: string;
+    redirectUrl: string;
+  }) {
+    const { from, to, redirectUrl } = input;
+    const subject = 'Recuperar contraseña';
+    const body = `Haga clic en el siguiente enlace para recuperar su contraseña. ${redirectUrl}`;
+
+    await this.emailService.send({
+      from,
+      to,
+      subject,
+      body,
+    });
+  }
 }
