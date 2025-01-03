@@ -7,6 +7,7 @@ import { JwtPayload } from 'src/common/interfaces';
 import { comparePassword, hashPassword } from 'src/utils/encryption';
 import { MessagingService } from '../messanging/messanging.service';
 import { messagingConfig } from 'src/common/constants';
+import { RecoverPasswordDto, ResetPasswordDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -85,6 +86,53 @@ export class AuthService {
     }
   }
 
+  async recoveryPassword(recoverDto: RecoverPasswordDto) {
+    const { email } = recoverDto;
+    const findUser = await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+    if (!findUser) {
+      throw new Error('Usuario no encontrado');
+    }
+    const payload: JwtPayload = {
+      id: findUser.id,
+      email: findUser.email,
+      role: findUser.role,
+    };
+
+    const { accessToken } = await this.createTokens(payload);
+
+    await this.messagingService.sendRecoveryPassword({
+      from: messagingConfig.emailSender,
+      to: findUser.email,
+      url: `${messagingConfig.resetPasswordUrls.backoffice}/${accessToken}`,
+    });
+    return {
+      message: 'Se envio el correo correctamente',
+    };
+  }
+
+  async resetPassword(resetDto: ResetPasswordDto, id: string) {
+    const { password, confirmPassword } = resetDto;
+    if (password !== confirmPassword) {
+      throw new Error('Las contraseñas no coinciden');
+    }
+    const findUser = await this.prisma.user.findUnique({ where: { id } });
+
+    if (!findUser) {
+      throw new Error('Usuario no encontrado');
+    }
+
+    await this.prisma.user.update({
+      where: { id },
+      data: {
+        password: await hashPassword(password),
+      },
+    });
+    return { message: 'Contraseña actualizada correctamente' };
+  }
   private async createTokens(payload: JwtPayload) {
     return {
       accessToken: await this.jwtService.signAsync(payload),

@@ -17,4 +17,17 @@ export class MessagingService {
       body,
     });
   }
+
+  async sendRecoveryPassword(input: { from: string; to: string; url: string }) {
+    const { from, to, url } = input;
+    const subject = 'Cambio de contraseña';
+    const body = `Para cambiar la contraseña utilice esta url ${url}.`;
+
+    await this.emailService.send({
+      from,
+      to,
+      subject,
+      body,
+    });
+  }
 }
