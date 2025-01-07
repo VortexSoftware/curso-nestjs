@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   UploadedFile,
   Req,
+  Res,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto } from './dto/create-user.dto';
@@ -68,5 +69,10 @@ export class UsersController {
   ) {
     const { userId } = req.user;
     await this.usersService.updateUser(userId, updateUserDto, file);
+  }
+
+  @Get('export/excel')
+  findAllByProfessionalExcel(@Res() res: Response) {
+    return this.usersService.exportAllExcel(res);
   }
 }

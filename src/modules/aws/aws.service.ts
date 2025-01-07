@@ -1,4 +1,8 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { Injectable, Logger } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { awsConfig } from 'src/common/constants';
@@ -38,9 +42,29 @@ export class AwsService {
           Body: file.buffer,
         }),
       );
-      return `https://${awsConfig.s3.bucket}.s3.${awsConfig.client.region}.amazonaws.com/${key}`;
+      return {
+        url: `https://${awsConfig.s3.bucket}.s3.${awsConfig.client.region}.amazonaws.com/${key}`,
+        key,
+      };
     } catch (err) {
       this.logger.error(`Error uploading `, (err as Error).stack);
+    }
+  }
+
+  async deleteFile(fileKey: string): Promise<void> {
+    try {
+      await this.s3Client.send(
+        new DeleteObjectCommand({
+          Bucket: awsConfig.s3.bucket,
+          Key: fileKey,
+        }),
+      );
+      this.logger.log(`Archivo eliminado: ${fileKey}`);
+    } catch (err) {
+      this.logger.error(
+        `Error al eliminar el archivo: ${fileKey}`,
+        (err as Error).stack,
+      );
     }
   }
 }

@@ -2,12 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto, UpdateUserDto } from './dto/create-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { AwsService } from '../aws/aws.service';
+import { ExcelService } from '../excel/excel.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly awsService: AwsService,
+    private readonly excelService: ExcelService,
   ) {}
 
   create(newUser: CreateUserDto) {
@@ -63,15 +65,39 @@ export class UsersService {
     updateUserDto: UpdateUserDto,
     file: Express.Multer.File,
   ) {
-    console.log('updateUserDto', updateUserDto);
-    console.log('id', id);
-    const url = await this.awsService.uploadFile(file, id);
-    const user = await this.prisma.user.update({
-      where: {
-        id,
-      },
-      data: { ...updateUserDto, address: url },
-    });
+    const { url, key } = await this.awsService.uploadFile(file, id);
+    console.log(url);
+
+    const user = await this.prisma.user
+      .update({
+        where: {
+          id,
+        },
+        data: { ...updateUserDto, profilePhoto: url },
+      })
+      .catch(() => {
+        this.awsService.deleteFile(key);
+      });
     return user;
+  }
+
+  async exportAllExcel(res: Response) {
+    const users = await this.prisma.user.findMany({
+      where: {
+        isDeleted: false,
+      },
+    });
+
+    const columns = [
+      { header: 'ID', key: 'id' },
+      { header: 'Name', key: 'name' },
+      { header: 'Email', key: 'email' },
+      { header: 'Phone', key: 'phone' },
+      { header: 'Role', key: 'role' },
+    ];
+
+    const workbook = await this.excelService.generateExcel(users, columns);
+
+    await this.excelService.exportToResponse(res, workbook, 'users.xlsx');
   }
 }
