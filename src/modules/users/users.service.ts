@@ -3,6 +3,7 @@ import { CreateUserDto, UpdateUserDto } from './dto/create-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { AwsService } from '../aws/aws.service';
 import { ExcelService } from '../excel/excel.service';
+import { ExcelColumn } from 'src/common/interfaces';
 
 @Injectable()
 export class UsersService {
@@ -88,7 +89,7 @@ export class UsersService {
       },
     });
 
-    const columns = [
+    const columns: ExcelColumn[] = [
       { header: 'ID', key: 'id' },
       { header: 'Name', key: 'name' },
       { header: 'Email', key: 'email' },
@@ -99,5 +100,11 @@ export class UsersService {
     const workbook = await this.excelService.generateExcel(users, columns);
 
     await this.excelService.exportToResponse(res, workbook, 'users.xlsx');
+  }
+
+  async uploadUsers(buffer: Buffer) {
+    const users = await this.excelService.readExcel(buffer);
+
+    console.log(users);
   }
 }

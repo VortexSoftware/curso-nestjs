@@ -62,7 +62,7 @@ export class UsersController {
 
   @Post('file')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(
+  async exportUser(
     @UploadedFile() file: Express.Multer.File,
     @Req() req,
     @Body() updateUserDto: UpdateUserDto,
@@ -74,5 +74,11 @@ export class UsersController {
   @Get('export/excel')
   findAllByProfessionalExcel(@Res() res: Response) {
     return this.usersService.exportAllExcel(res);
+  }
+  @Post('upload/excel')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadUsers(@UploadedFile() file: Express.Multer.File) {
+    const data = await this.usersService.uploadUsers(file.buffer);
+    return data;
   }
 }
