@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { TDocumentDefinitions } from 'pdfmake';
-
+import { TDocumentDefinitions } from 'pdfmake/interfaces';
 import PdfPrinter from 'pdfmake';
 
 @Injectable()

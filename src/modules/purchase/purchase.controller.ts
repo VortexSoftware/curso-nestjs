@@ -59,10 +59,14 @@ export class PurchaseController {
   }
 
   @Get('chart/bar')
-  async getPurchaseBarChart(@Res() res: Response) {
-    const buffer = await this.purchaseService.generatePurchaseBarChart();
+  async generateReport(@Res() res: Response): Promise<void> {
+    const pdfBuffer = await this.purchaseService.generatePurchaseBarChart();
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'attachment; filename="purchase_report.pdf"',
+      'Content-Length': pdfBuffer.length.toString(),
+    });
 
-    res.setHeader('Content-Type', 'image/png');
-    res.send(buffer);
+    res.send(pdfBuffer);
   }
 }

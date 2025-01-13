@@ -3,12 +3,15 @@ import { CreatePurchaseDto } from './dto/create-purchase.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChartService } from '../chart/chart.service';
 import { ChartConfiguration } from 'chart.js';
+import { PrinterService } from '../printer/printer.service';
+import { generatePDF } from '../printer/documents/sample.report';
 
 @Injectable()
 export class PurchaseService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly chartService: ChartService,
+    private readonly printerService: PrinterService,
   ) {}
 
   async create(createPurchaseDto: CreatePurchaseDto, userId: string) {
@@ -112,11 +115,23 @@ export class PurchaseService {
       },
     };
 
-    return await this.chartService.generateChart(
+    const chartBuffer = await this.chartService.generateChart(
       'bar',
       chartData,
       chartOptions,
     );
+
+    const pdfDefinition = await generatePDF(chartBuffer);
+
+    const pdfDoc = await this.printerService.createPdf(pdfDefinition);
+
+    return new Promise((resolve, reject) => {
+      const chunks: Uint8Array[] = [];
+      pdfDoc.on('data', (chunk) => chunks.push(chunk));
+      pdfDoc.on('end', () => resolve(Buffer.concat(chunks)));
+      pdfDoc.on('error', reject);
+      pdfDoc.end();
+    });
   }
 
   async remove(id: string) {

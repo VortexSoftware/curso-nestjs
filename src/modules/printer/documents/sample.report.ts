@@ -1,5 +1,4 @@
-import type { StyleDictionary, TDocumentDefinitions } from 'pdfmake';
-
+import type { StyleDictionary, TDocumentDefinitions } from 'pdfmake/interfaces';
 const styles: StyleDictionary = {
   header: {
     fontSize: 16,
@@ -13,9 +12,12 @@ const styles: StyleDictionary = {
   },
 };
 
-export const prescriptionPDF = async (
-  data: any,
+export const generatePDF = async (
+  chartBuffer: Buffer,
 ): Promise<TDocumentDefinitions> => {
+  const chartBase64 = chartBuffer.toString('base64');
+  const chartImage = `data:image/png;base64,${chartBase64}`;
+
   return {
     defaultStyle: {
       fontSize: 10,
@@ -25,8 +27,24 @@ export const prescriptionPDF = async (
     },
     pageSize: 'A4',
     pageMargins: [30, 25],
-    content: [],
-
+    content: [
+      {
+        text: 'Reporte de Compras',
+        style: 'header',
+        margin: [0, 0, 0, 20],
+      },
+      {
+        text: 'La siguiente gráfica muestra el monto total de compras por fecha:',
+        style: 'subheader',
+        margin: [0, 0, 0, 10],
+      },
+      {
+        image: chartImage,
+        width: 500,
+        alignment: 'center',
+        margin: [0, 10, 0, 20],
+      },
+    ],
     styles: styles,
   };
 };
