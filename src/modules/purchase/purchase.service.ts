@@ -78,15 +78,15 @@ export class PurchaseService {
       orderBy: { createdAt: 'asc' },
     });
 
-    const groupedByDate = purchases.reduce((acc, purchase) => {
-      const date = purchase.createdAt.toISOString().split('T')[0];
-      if (!acc[date]) {
-        acc[date] = 0;
-      }
-      acc[date] += Number(purchase.totalAmount);
-      return acc;
-    }, {});
+    const groupedByDate = {};
 
+    purchases.forEach((purchase) => {
+      const date = purchase.createdAt.toISOString().split('T')[0];
+      if (!groupedByDate[date]) {
+        groupedByDate[date] = 0;
+      }
+      groupedByDate[date] += Number(purchase.totalAmount);
+    });
     const labels = Object.keys(groupedByDate);
     const data = Object.values(groupedByDate);
 
@@ -104,7 +104,7 @@ export class PurchaseService {
     const chartOptions: ChartConfiguration['options'] = {
       responsive: true,
       plugins: {
-        legend: { position: 'top' as const },
+        legend: { position: 'top' },
         title: {
           display: true,
           text: 'Compras por Fecha',
