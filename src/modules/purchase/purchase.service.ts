@@ -1,10 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { ChartService } from '../chart/chart.service';
+import { ChartConfiguration } from 'chart.js';
 
 @Injectable()
 export class PurchaseService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly chartService: ChartService,
+  ) {}
 
   async create(createPurchaseDto: CreatePurchaseDto, userId: string) {
     try {
@@ -66,6 +71,52 @@ export class PurchaseService {
     return await this.prisma.purchase.findMany({
       where: { userId },
     });
+  }
+  async generatePurchaseBarChart(): Promise<Buffer> {
+    const purchases = await this.prisma.purchase.findMany({
+      select: { id: true, totalAmount: true, createdAt: true },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const groupedByDate = purchases.reduce((acc, purchase) => {
+      const date = purchase.createdAt.toISOString().split('T')[0];
+      if (!acc[date]) {
+        acc[date] = 0;
+      }
+      acc[date] += Number(purchase.totalAmount);
+      return acc;
+    }, {});
+
+    const labels = Object.keys(groupedByDate);
+    const data = Object.values(groupedByDate);
+
+    const chartData = {
+      labels,
+      datasets: [
+        {
+          label: 'Monto Total de Compras',
+          data,
+          backgroundColor: '#36A2EB',
+        },
+      ],
+    };
+
+    const chartOptions: ChartConfiguration['options'] = {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' as const },
+        title: {
+          display: true,
+          text: 'Compras por Fecha',
+        },
+      },
+    };
+
+    return await this.chartService.generateChart(
+      'bar',
+      chartData,
+      chartOptions,
+    );
   }
 
   async remove(id: string) {

@@ -7,6 +7,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  Res,
 } from '@nestjs/common';
 import { PurchaseService } from './purchase.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
@@ -14,6 +15,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { RoleEnum } from 'src/common/constants';
+import { Response } from 'express';
 
 @Controller('purchase')
 export class PurchaseController {
@@ -54,5 +56,13 @@ export class PurchaseController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.purchaseService.remove(id);
+  }
+
+  @Get('chart/bar')
+  async getPurchaseBarChart(@Res() res: Response) {
+    const buffer = await this.purchaseService.generatePurchaseBarChart();
+
+    res.setHeader('Content-Type', 'image/png');
+    res.send(buffer);
   }
 }
