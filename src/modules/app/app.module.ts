@@ -6,6 +6,8 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from '../prisma/prisma.module';
 import { envValidationSchema } from 'src/config/env-validation.config';
 import { AuthModule } from '../auth/auth.module';
+import { ProductModule } from '../product/product.module';
+import { PurchaseModule } from '../purchase/purchase.module';
 
 @Module({
   imports: [
@@ -14,9 +16,11 @@ import { AuthModule } from '../auth/auth.module';
       envFilePath: ['.env'],
       validationSchema: envValidationSchema,
     }),
+    PrismaModule,
     AuthModule,
     UsersModule,
-    PrismaModule,
+    ProductModule,
+    PurchaseModule,
   ],
   controllers: [AppController],
   providers: [AppService],

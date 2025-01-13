@@ -30,10 +30,48 @@ model User {
 
   isActive Boolean      @default(true)
 
-  isDeleted Boolean    @default(false)
+  isDeleted  Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  purchases  Purchase[]
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String
+  price       Decimal
+  stock       Int
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  purchaseLines PurchaseLine[]
+}
+
+model Purchase {
+  id          String       @id @default(uuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  totalAmount Decimal
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  isDeleted   Boolean  @default(false)
+  purchaseLines PurchaseLine[]
+}
+
+model PurchaseLine {
+  id          String   @id @default(uuid())
+  purchaseId  String
+  purchase    Purchase @relation(fields: [purchaseId], references: [id])
+
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+
+  quantity    Int
+  subtotal    Decimal
+  createdAt   DateTime @default(now())
 }
 
 model Report {

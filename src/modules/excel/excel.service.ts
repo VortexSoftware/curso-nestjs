@@ -53,7 +53,7 @@ export class ExcelService {
 
     const headers: string[] = [];
     worksheet.getRow(1).eachCell((cell) => {
-      headers.push(cell.value?.toString() || '');
+      headers.push(cell.value?.toString().toLowerCase() || '');
     });
 
     const data: any[] = [];
@@ -65,7 +65,8 @@ export class ExcelService {
       row.eachCell((cell, colNumber) => {
         const header = headers[colNumber - 1];
         if (header) {
-          rowData[header] = cell.value;
+          rowData[header] =
+            cell.value.toString().trim() === '' ? null : cell.value;
         }
       });
 
