@@ -41,7 +41,7 @@ model Product {
   id          String   @id @default(uuid())
   name        String   @unique
   description String
-  price       Decimal
+  price       Float
   stock       Int
   isDeleted   Boolean  @default(false)
   createdAt   DateTime @default(now())

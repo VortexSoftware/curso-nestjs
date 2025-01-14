@@ -36,6 +36,14 @@ export class PurchaseController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleEnum.SUPERADMIN)
+  @Get()
+  findAllByUser(@Req() req) {
+    const { userId } = req.user;
+    return this.purchaseService.findAllByUser(userId);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleEnum.SUPERADMIN)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.purchaseService.findOne(id);

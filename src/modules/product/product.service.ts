@@ -15,7 +15,11 @@ export class ProductService {
 
     for (let index = 0; index < products.length; index++) {
       const product = products[index];
-      await this.prisma.product.create({ data: product });
+      const productNew = {
+        ...product,
+        price: parseFloat(product.price),
+      };
+      await this.prisma.product.create({ data: productNew });
     }
     return { message: 'Productos creados correctamente' };
   }

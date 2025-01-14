@@ -62,6 +62,12 @@ export class PurchaseService {
     return await this.prisma.purchase.findUnique({ where: { id } });
   }
 
+  async findAllByUser(userId: string) {
+    return await this.prisma.purchase.findMany({
+      where: { userId },
+    });
+  }
+
   async remove(id: string) {
     return await this.prisma.purchase.update({
       where: { id },
