@@ -1,17 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { generatePDF } from '../printer/documents';
+import { PrinterService } from '../printer/printer.service';
 
 @Injectable()
 export class PurchaseService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly printerService: PrinterService,
+  ) {}
 
   async create(createPurchaseDto: CreatePurchaseDto, userId: string) {
     try {
       const { purchaseLines, totalAmount } = createPurchaseDto;
       for (const line of purchaseLines) {
         const product = await this.prisma.product.findUnique({
-          where: { id: line.productId },
+          where: { id: line.productId, isDeleted: false },
         });
         if (!product || product.isDeleted) {
           throw new Error(
@@ -38,7 +43,11 @@ export class PurchaseService {
             })),
           },
         },
-        include: { purchaseLines: true },
+        include: {
+          purchaseLines: {
+            include: { product: true },
+          },
+        },
       });
 
       for (const line of purchaseLines) {
@@ -65,6 +74,7 @@ export class PurchaseService {
   async findAllByUser(userId: string) {
     return await this.prisma.purchase.findMany({
       where: { userId },
+      include: { purchaseLines: { include: { product: true } } },
     });
   }
 
@@ -72,6 +82,20 @@ export class PurchaseService {
     return await this.prisma.purchase.update({
       where: { id },
       data: { isDeleted: true },
+    });
+  }
+
+  async generatePdf(): Promise<Buffer> {
+    const pdfDefinition = await generatePDF();
+
+    const pdfDoc = await this.printerService.createPdf(pdfDefinition);
+
+    return new Promise((resolve, reject) => {
+      const chunks: Uint8Array[] = [];
+      pdfDoc.on('data', (chunk) => chunks.push(chunk));
+      pdfDoc.on('end', () => resolve(Buffer.concat(chunks)));
+      pdfDoc.on('error', reject);
+      pdfDoc.end();
     });
   }
 }

@@ -7,6 +7,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  Res,
 } from '@nestjs/common';
 import { PurchaseService } from './purchase.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
@@ -14,6 +15,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { RoleEnum } from 'src/common/constants';
+import { Response } from 'express';
 
 @Controller('purchase')
 export class PurchaseController {
@@ -35,8 +37,8 @@ export class PurchaseController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RoleEnum.SUPERADMIN)
-  @Get()
+  @Roles(RoleEnum.USER)
+  @Get('all/user')
   findAllByUser(@Req() req) {
     const { userId } = req.user;
     return this.purchaseService.findAllByUser(userId);
@@ -54,5 +56,15 @@ export class PurchaseController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.purchaseService.remove(id);
+  }
+
+  @Get('generate/pdf')
+  async generatePdf(@Res() res: Response): Promise<void> {
+    const pdfBuffer = await this.purchaseService.generatePdf();
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'inline; filename=generated.pdf',
+    });
+    res.send(pdfBuffer);
   }
 }

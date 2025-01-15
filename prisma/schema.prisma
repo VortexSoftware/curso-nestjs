@@ -54,7 +54,7 @@ model Purchase {
   id          String       @id @default(uuid())
   userId      String
   user        User         @relation(fields: [userId], references: [id])
-  totalAmount Decimal
+  totalAmount Float
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   isDeleted   Boolean  @default(false)
@@ -70,7 +70,7 @@ model PurchaseLine {
   product     Product  @relation(fields: [productId], references: [id])
 
   quantity    Int
-  subtotal    Decimal
+  subtotal    Float
   createdAt   DateTime @default(now())
 }
 
