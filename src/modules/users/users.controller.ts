@@ -11,6 +11,7 @@ import {
   UploadedFile,
   Req,
   Res,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto } from './dto/create-user.dto';
@@ -20,6 +21,7 @@ import { RoleEnum } from 'src/common/constants';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiCustomOperation } from 'src/common/decorators/swagger.decorator';
+import { PaginationArgs } from 'src/utils/pagination/pagination.dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(RoleEnum.USER)
@@ -38,14 +40,15 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  @Roles(RoleEnum.SUPERADMIN)
   @ApiCustomOperation({
     summary: 'get all users',
     responseStatus: 200,
     responseDescription: 'Return all users',
   })
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query() pagination: PaginationArgs) {
+    return this.usersService.findAllUserWithPagination(pagination);
   }
 
   @Get(':id')

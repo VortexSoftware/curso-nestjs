@@ -4,6 +4,10 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AwsService } from '../aws/aws.service';
 import { ExcelColumn } from 'src/common/interfaces';
 import { ExcelService } from '../excel/excel.service';
+import { PaginationArgs } from 'src/utils/pagination/pagination.dto';
+import { Prisma } from '@prisma/client';
+import { Paginate } from 'src/utils/parsing';
+import { getPaginationFilter } from 'src/utils/pagination/pagination.utils';
 
 @Injectable()
 export class UsersService {
@@ -27,6 +31,41 @@ export class UsersService {
       },
     });
     return users;
+  }
+
+  async findAllUserWithPagination(pagination: PaginationArgs) {
+    const { search } = pagination;
+
+    const where: Prisma.UserWhereInput = {
+      isDeleted: false,
+      ...(search && {
+        OR: [
+          {
+            name: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            email: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      }),
+    };
+
+    const baseQuery = {
+      where,
+      ...getPaginationFilter(pagination),
+    };
+
+    const total = await this.prisma.user.count({ where });
+    const dataUsers = await this.prisma.user.findMany(baseQuery);
+
+    const res = Paginate(dataUsers, total, pagination);
+    return res;
   }
 
   findOne(id: string) {
