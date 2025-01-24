@@ -8,6 +8,7 @@ import { PaginationArgs } from 'src/utils/pagination/pagination.dto';
 import { Prisma } from '@prisma/client';
 import { Paginate } from 'src/utils/parsing';
 import { getPaginationFilter } from 'src/utils/pagination/pagination.utils';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class UsersService {
@@ -15,6 +16,7 @@ export class UsersService {
     private readonly prisma: PrismaService,
     private readonly awsService: AwsService,
     private readonly excelService: ExcelService,
+    private readonly i18n: I18nService,
   ) {}
 
   create(newUser: CreateUserDto) {
@@ -65,6 +67,11 @@ export class UsersService {
     const dataUsers = await this.prisma.user.findMany(baseQuery);
 
     const res = Paginate(dataUsers, total, pagination);
+    const userName = 'Joe';
+    const message = this.i18n.t('messages.welcome', {
+      args: { name: userName },
+    });
+    console.log('message', message);
     return res;
   }
 
