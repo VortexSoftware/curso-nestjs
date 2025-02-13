@@ -9,6 +9,7 @@ import { AuthModule } from '../auth/auth.module';
 import { ProductModule } from '../product/product.module';
 import { PurchaseModule } from '../purchase/purchase.module';
 import I18nModuleConfig from 'src/config/i18n.config';
+import { PaymentModule } from '../payment/payment.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import I18nModuleConfig from 'src/config/i18n.config';
     UsersModule,
     ProductModule,
     PurchaseModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

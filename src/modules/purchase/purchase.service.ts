@@ -5,12 +5,14 @@ import { ChartService } from '../chart/chart.service';
 import { ChartConfiguration } from 'chart.js';
 import { PrinterService } from '../printer/printer.service';
 import { generatePDF } from '../printer/documents/sample.report';
+import { MercadopagoService } from '../mercadopago/mercadopago.service';
 
 @Injectable()
 export class PurchaseService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly chartService: ChartService,
+    private readonly mercadopagoService: MercadopagoService,
     private readonly printerService: PrinterService,
   ) {}
 
@@ -34,7 +36,7 @@ export class PurchaseService {
         }
       }
 
-      await this.prisma.purchase.create({
+      const purchase = await this.prisma.purchase.create({
         data: {
           userId,
           totalAmount,
@@ -56,6 +58,19 @@ export class PurchaseService {
         });
       }
 
+      const mercadopagoResult = await this.mercadopagoService.createPayment(
+        purchase.id,
+        totalAmount,
+      );
+      await this.prisma.payment.create({
+        data: {
+          purchaseId: purchase.id,
+          amount: totalAmount,
+          status: 'PENDING',
+          method: 'mercadopago',
+          link: mercadopagoResult.init_point,
+        },
+      });
       return { message: 'Compra creada con éxito' };
     } catch (error) {
       return { message: 'Error al crear la compra', error: error.message };

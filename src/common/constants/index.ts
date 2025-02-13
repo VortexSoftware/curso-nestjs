@@ -23,3 +23,8 @@ export const awsConfig = {
     bucket: env.AWS_BUCKET,
   },
 } as const;
+
+export const mercadopagoConfig = {
+  accessToken: env.MERCADOPAGO_ACCESS_TOKEN,
+  webhookUrl: env.MERCADOPAGO_WEBHOOK_URL,
+};

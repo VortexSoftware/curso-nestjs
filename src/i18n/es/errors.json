@@ -1,5 +1,6 @@
 {
-    "isNotEmpty": "{property} no debe estar vacio",
-    "isString": "{property} debe ser una cadena de texto",
-    "isEmail": "Debe ser una dirección de correo valida"
+  "isNotEmpty": "{property} no debe estar vacio",
+  "isString": "{property} debe ser una cadena de texto",
+  "isEmail": "Debe ser una dirección de correo valida",
+  "paymentCompleted": "El pago ya ha sido completado"
 }
