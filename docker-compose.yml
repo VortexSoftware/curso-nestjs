@@ -1,0 +1,48 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: nestjs_app
+    ports:
+      - '4000:4000'
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://admin:pass1234@db:5432/mydb
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: /bin/sh -c "
+      npm un canvas bcrypt && 
+      npm i canvas bcrypt && 
+      npx prisma migrate deploy &&
+      npm run start:dev
+      "
+
+  db:
+    image: postgres:latest
+    container_name: postgres_db
+    restart: always
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=pass1234
+      - POSTGRES_DB=mydb
+    ports:
+      - '5439:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - '8000:80'
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
